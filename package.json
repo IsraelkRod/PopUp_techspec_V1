@@ -5,9 +5,17 @@
   "type": "module",
   "description": "POP UP — modular vendor & host analytics platform (tech spec + reference code).",
   "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
     "test": "node --experimental-vm-modules node_modules/.bin/jest"
   },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2"
+  },
   "devDependencies": {
-    "jest": "^29.7.0"
+    "jest": "^29.7.0",
+    "supertest": "^7.0.0"
   }
 }
