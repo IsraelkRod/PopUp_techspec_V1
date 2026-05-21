@@ -14,9 +14,25 @@ function fakeSquare() {
       expires_at: '2027-01-01T00:00:00Z',
     }),
     listPayments: async () => [
-      { id: 'pay_1', amount_money: { amount: 1500, currency: 'USD' }, created_at: '2026-05-01T10:00:00Z' },
-      { id: 'pay_2', amount_money: { amount: 800, currency: 'USD' }, created_at: '2026-05-01T11:00:00Z' },
+      { id: 'pay_1', order_id: 'ord_1', amount_money: { amount: 1500, currency: 'USD' }, created_at: '2026-05-01T10:00:00Z' },
+      { id: 'pay_2', order_id: 'ord_2', amount_money: { amount: 800, currency: 'USD' }, created_at: '2026-05-01T11:00:00Z' },
     ],
+    batchRetrieveOrders: async ({ orderIds }) =>
+      [
+        {
+          id: 'ord_1',
+          line_items: [
+            { name: 'Latte', quantity: '2', base_price_money: { amount: 500, currency: 'USD' }, total_money: { amount: 1000, currency: 'USD' } },
+            { name: 'Croissant', quantity: '1', base_price_money: { amount: 500, currency: 'USD' }, total_money: { amount: 500, currency: 'USD' } },
+          ],
+        },
+        {
+          id: 'ord_2',
+          line_items: [
+            { name: 'Cold Brew', quantity: '2', base_price_money: { amount: 400, currency: 'USD' }, total_money: { amount: 800, currency: 'USD' } },
+          ],
+        },
+      ].filter((o) => orderIds.includes(o.id)),
   };
 }
 
@@ -54,6 +70,14 @@ describe('Square connect → backfill → feed', () => {
     expect(feed.status).toBe(200);
     expect(feed.body.summary).toEqual({ count: 2, grossCents: 2300 });
     expect(feed.body.sales.every((s) => s.source === 'square')).toBe(true);
+
+    // Line-item detail came through from the Orders API.
+    const order1 = feed.body.sales.find((s) => s.idempotencyKey === 'square:pay_1');
+    expect(order1.items).toEqual([
+      { productName: 'Latte', quantity: 2, unitPriceCents: 500, totalCents: 1000 },
+      { productName: 'Croissant', quantity: 1, unitPriceCents: 500, totalCents: 500 },
+    ]);
+    expect(order1.lineItemCount).toBe(2);
 
     // 4. Status reflects the connection.
     const status = await request(app).get('/connect/square/status').set(auth(token));

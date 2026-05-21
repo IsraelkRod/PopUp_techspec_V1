@@ -19,9 +19,22 @@ export function createSquareConnectService({ connections, db, squareClient }) {
   async function runBackfill(connection) {
     const accessToken = decrypt(connection.accessTokenEnc);
     const payments = await squareClient.listPayments({ accessToken });
+
+    // Payments reference an order_id; orders hold the line-item detail.
+    const orderIds = [
+      ...new Set(payments.map((p) => p.order_id).filter(Boolean)),
+    ];
+    const orders = orderIds.length
+      ? await squareClient.batchRetrieveOrders({ accessToken, orderIds })
+      : [];
+    const ordersById = new Map(orders.map((o) => [o.id, o]));
+
     let created = 0;
     for (const payment of payments) {
-      const sale = normalizeSquarePayment(payment, connection.vendorId);
+      const order = payment.order_id
+        ? ordersById.get(payment.order_id) ?? null
+        : null;
+      const sale = normalizeSquarePayment(payment, connection.vendorId, order);
       if (!(await db.findSaleByEventId(sale.idempotencyKey))) {
         await db.insertSale(sale);
         created += 1;

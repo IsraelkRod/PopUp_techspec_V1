@@ -61,5 +61,23 @@ export function createSquareClient({ fetchImpl = fetch } = {}) {
       const json = await res.json();
       return json.payments ?? [];
     },
+
+    // Orders carry the line-item detail that payments lack. Up to 100 ids/call.
+    async batchRetrieveOrders({ accessToken, orderIds }) {
+      const res = await fetchImpl(`${baseUrl()}/v2/orders/batch-retrieve`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+          'Square-Version': SQUARE_VERSION,
+        },
+        body: JSON.stringify({ order_ids: orderIds }),
+      });
+      if (!res.ok) {
+        throw new Error(`Square orders fetch failed (${res.status})`);
+      }
+      const json = await res.json();
+      return json.orders ?? [];
+    },
   };
 }
