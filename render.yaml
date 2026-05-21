@@ -1,0 +1,46 @@
+services:
+  - type: web
+    name: popup-api
+    runtime: node
+    plan: free
+    # IMPORTANT: the code lives on this branch (main is empty).
+    branch: claude/modernize-es6-standards-q0ULR
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      # Generated automatically by Render (good random secrets):
+      - key: JWT_SECRET
+        generateValue: true
+      - key: SECRET_ENCRYPTION_KEY
+        generateValue: true
+      # Square (you'll paste these in the dashboard during setup):
+      - key: SQUARE_ENVIRONMENT
+        value: sandbox
+      - key: SQUARE_APPLICATION_ID
+        sync: false
+      - key: SQUARE_APPLICATION_SECRET
+        sync: false
+      - key: SQUARE_REDIRECT_URL
+        sync: false
+      - key: SQUARE_WEBHOOK_SIGNATURE_KEY
+        sync: false
+      # Clover (later):
+      - key: CLOVER_ENVIRONMENT
+        value: sandbox
+      - key: CLOVER_APP_ID
+        sync: false
+      - key: CLOVER_APP_SECRET
+        sync: false
+      - key: CLOVER_REDIRECT_URL
+        sync: false
+      # Stripe (later):
+      - key: STRIPE_CONNECT_CLIENT_ID
+        sync: false
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_REDIRECT_URL
+        sync: false
