@@ -20,4 +20,21 @@ export const config = {
       process.env.SQUARE_REDIRECT_URL ??
       'http://localhost:3000/connect/square/callback',
   },
+
+  clover: {
+    environment: process.env.CLOVER_ENVIRONMENT ?? 'sandbox',
+    appId: process.env.CLOVER_APP_ID ?? '',
+    appSecret: process.env.CLOVER_APP_SECRET ?? '',
+    redirectUrl:
+      process.env.CLOVER_REDIRECT_URL ??
+      'http://localhost:3000/connect/clover/callback',
+  },
+
+  stripe: {
+    clientId: process.env.STRIPE_CONNECT_CLIENT_ID ?? '',
+    secretKey: process.env.STRIPE_SECRET_KEY ?? '',
+    redirectUrl:
+      process.env.STRIPE_REDIRECT_URL ??
+      'http://localhost:3000/connect/stripe/callback',
+  },
 };

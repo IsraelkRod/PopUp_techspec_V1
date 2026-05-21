@@ -62,7 +62,8 @@ describe('Square connect → backfill → feed', () => {
       .query({ code: 'auth_code_abc', state });
     expect(cb.status).toBe(200);
     expect(cb.body.status).toBe('connected');
-    expect(cb.body.merchantId).toBe('MERCHANT_123');
+    expect(cb.body.provider).toBe('square');
+    expect(cb.body.account).toBe('MERCHANT_123');
     expect(cb.body.backfill).toEqual({ fetched: 2, created: 2 });
 
     // 3. The feed is now populated.
@@ -81,7 +82,7 @@ describe('Square connect → backfill → feed', () => {
 
     // 4. Status reflects the connection.
     const status = await request(app).get('/connect/square/status').set(auth(token));
-    expect(status.body).toMatchObject({ connected: true, merchantId: 'MERCHANT_123' });
+    expect(status.body).toMatchObject({ connected: true, account: 'MERCHANT_123' });
   });
 
   test('a non-vendor cannot connect a POS (403)', async () => {

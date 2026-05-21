@@ -284,15 +284,25 @@ See `docs/tempFunction-review.md` for a concrete security walkthrough of the web
 
 ---
 
-## 9. Milestones
+## 9. Milestones & status
 
-1. **M0 — Foundations:** auth, profiles, DB schema, CI + Jest harness.
-2. **M1 — Ingestion MVP:** one provider (Stripe), webhook receiver + normalizer +
-   raw store + idempotency (the `tempFunction` path productionized).
-3. **M2 — Markets/Events:** `Start Project`, event dates, vendor funnel, notifications.
-4. **M3 — Analytics:** live KPIs + historical dashboards + comparables.
-5. **M4 — More connectors:** Square/Clover/Toast + backfill poller.
-6. **M5 — Shopper read tier + hardening/scale.**
+1. ✅ **M0 — Foundations:** Express app, JWT auth (signup/login/me, bcrypt), config,
+   error handling, Jest harness.
+2. ✅ **M1 — Ingestion MVP:** signed POS webhook receiver, normalizer, idempotency
+   (the `tempFunction` path productionized).
+3. ✅ **M2 — Markets/Events:** `Start Project`, event dates, vendor funnel
+   (apply → approve), role + ownership auth.
+4. ✅ **M3 — Analytics (vendor KPIs):** gross, transactions, avg ticket, top products,
+   gross-by-source. *Pending: per-event/market rollups, comparables, caching.*
+5. ✅ **M4 — Connectors:** generic adapter framework + **Square, Clover, Stripe**
+   (OAuth connect, encrypted tokens, backfill, line items where available).
+   *Pending: Toast, backfill poller, live webhooks per provider.*
+6. ⏳ **M5 — Shopper read tier + persistence (Postgres) + hardening/scale.**
+
+> **Current state:** all of the above runs on **in-memory repositories** behind
+> swappable interfaces (data resets on restart). Real persistence (Postgres),
+> live webhooks, and a public deployment for OAuth round-trips are the remaining
+> infrastructure steps — see the connector clients for the exact provider calls.
 
 ---
 
