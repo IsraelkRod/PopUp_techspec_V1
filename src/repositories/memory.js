@@ -59,6 +59,10 @@ export function createMarketRepo() {
       return [...markets.values()];
     },
 
+    async listByHost(hostId) {
+      return [...markets.values()].filter((m) => m.hostId === hostId);
+    },
+
     async addEvent({ marketId, startsAt, endsAt }) {
       const event = {
         id: crypto.randomUUID(),
@@ -117,6 +121,79 @@ export function createConnectionRepo() {
 
     async listByVendor(vendorId) {
       return [...byId.values()].filter((c) => c.vendorId === vendorId);
+    },
+  };
+}
+
+// In-memory profile store (vendor business profile / host org profile).
+export function createProfileRepo() {
+  const byUserId = new Map();
+
+  return {
+    async get(userId) {
+      return byUserId.get(userId) ?? null;
+    },
+
+    async upsert(userId, role, fields) {
+      const existing = byUserId.get(userId) ?? {
+        userId,
+        role,
+        createdAt: new Date().toISOString(),
+      };
+      const profile = {
+        ...existing,
+        ...fields,
+        userId,
+        role,
+        updatedAt: new Date().toISOString(),
+      };
+      byUserId.set(userId, profile);
+      return profile;
+    },
+  };
+}
+
+// In-memory notification store (in-app notifications per user).
+export function createNotificationRepo() {
+  const byId = new Map();
+
+  return {
+    async create({ userId, type, message, data }) {
+      const notification = {
+        id: crypto.randomUUID(),
+        userId,
+        type,
+        message,
+        data: data ?? {},
+        read: false,
+        createdAt: new Date().toISOString(),
+      };
+      byId.set(notification.id, notification);
+      return notification;
+    },
+
+    async listByUser(userId) {
+      return [...byId.values()]
+        .filter((n) => n.userId === userId)
+        .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    },
+
+    async markRead(id, userId) {
+      const n = byId.get(id);
+      if (!n || n.userId !== userId) return null;
+      n.read = true;
+      return n;
+    },
+
+    async markAllRead(userId) {
+      let updated = 0;
+      for (const n of byId.values()) {
+        if (n.userId === userId && !n.read) {
+          n.read = true;
+          updated += 1;
+        }
+      }
+      return updated;
     },
   };
 }

@@ -6,7 +6,14 @@ export class MarketError extends Error {
   }
 }
 
-export function createMarketService({ markets, applications }) {
+// notifications is optional; a no-op default keeps the service usable in isolation.
+const noopNotifications = { async create() {} };
+
+export function createMarketService({
+  markets,
+  applications,
+  notifications = noopNotifications,
+}) {
   async function getMarketOr404(id) {
     const market = await markets.getMarket(id);
     if (!market) throw new MarketError('Market not found', 404);
@@ -56,11 +63,23 @@ export function createMarketService({ markets, applications }) {
       if (endsAt && Date.parse(endsAt) <= Date.parse(startsAt)) {
         throw new MarketError('endsAt must be after startsAt');
       }
-      return markets.addEvent({
+      const event = await markets.addEvent({
         marketId: market.id,
         startsAt,
         endsAt: endsAt ?? null,
       });
+
+      // Notify everyone who applied to this market about the new date.
+      const applicants = await applications.listByMarket(marketId);
+      for (const a of applicants) {
+        await notifications.create({
+          userId: a.vendorId,
+          type: 'event.added',
+          message: `New date listed for "${market.name}"`,
+          data: { marketId: market.id, eventId: event.id },
+        });
+      }
+      return event;
     },
 
     async listEvents(marketId) {
@@ -73,15 +92,24 @@ export function createMarketService({ markets, applications }) {
       if (actor.role !== 'vendor') {
         throw new MarketError('Only vendors can apply to markets', 403);
       }
-      await getMarketOr404(marketId);
+      const market = await getMarketOr404(marketId);
       if (await applications.findByMarketAndVendor(marketId, actor.id)) {
         throw new MarketError('You have already applied to this market', 409);
       }
-      return applications.create({
+      const application = await applications.create({
         marketId,
         vendorId: actor.id,
         note: note ?? null,
       });
+
+      // Notify the host of the new application.
+      await notifications.create({
+        userId: market.hostId,
+        type: 'application.received',
+        message: `New vendor application to "${market.name}"`,
+        data: { marketId: market.id, applicationId: application.id },
+      });
+      return application;
     },
 
     async listApplications(actor, marketId) {
@@ -91,7 +119,7 @@ export function createMarketService({ markets, applications }) {
 
     // Host approves or rejects a vendor application.
     async decide(actor, marketId, applicationId, decision) {
-      await requireOwnedMarket(actor, marketId);
+      const market = await requireOwnedMarket(actor, marketId);
       if (!['approved', 'rejected'].includes(decision)) {
         throw new MarketError('decision must be "approved" or "rejected"');
       }
@@ -99,7 +127,41 @@ export function createMarketService({ markets, applications }) {
       if (!application || application.marketId !== marketId) {
         throw new MarketError('Application not found', 404);
       }
-      return applications.updateStatus(applicationId, decision);
+      const updated = await applications.updateStatus(applicationId, decision);
+
+      // Notify the vendor of the decision.
+      await notifications.create({
+        userId: application.vendorId,
+        type: 'application.decision',
+        message: `Your application to "${market.name}" was ${decision}`,
+        data: { marketId: market.id, applicationId, decision },
+      });
+      return updated;
+    },
+
+    // Host dashboard: each of the host's markets with event + application counts.
+    async hostOverview(actor) {
+      if (actor.role !== 'host') {
+        throw new MarketError('Only hosts have an overview', 403);
+      }
+      const owned = await markets.listByHost(actor.id);
+      const rows = [];
+      for (const m of owned) {
+        const events = await markets.listEvents(m.id);
+        const apps = await applications.listByMarket(m.id);
+        const applicationCounts = { pending: 0, approved: 0, rejected: 0 };
+        for (const a of apps) {
+          applicationCounts[a.status] = (applicationCounts[a.status] ?? 0) + 1;
+        }
+        rows.push({
+          id: m.id,
+          name: m.name,
+          status: m.status,
+          eventCount: events.length,
+          applicationCounts,
+        });
+      }
+      return { markets: rows, totals: { markets: rows.length } };
     },
   };
 }

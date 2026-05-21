@@ -4,12 +4,18 @@ import {
   createMarketRepo,
   createApplicationRepo,
   createConnectionRepo,
+  createProfileRepo,
+  createNotificationRepo,
 } from './repositories/memory.js';
 import { createInMemoryDb } from './db.js';
 import { createAuthService } from './auth/auth.service.js';
 import { createAuthRouter } from './auth/auth.routes.js';
+import { createProfileService } from './profiles/profile.service.js';
+import { createProfileRouter } from './profiles/profile.routes.js';
 import { createMarketService } from './markets/market.service.js';
 import { createMarketRouter } from './markets/market.routes.js';
+import { createHostRouter } from './host/host.routes.js';
+import { createNotificationRouter } from './notifications/notification.routes.js';
 import { createWebhookRouter } from './pos/webhook.routes.js';
 import { createSquareClient } from './pos/square/squareClient.js';
 import { createSquareAdapter } from './pos/square/squareAdapter.js';
@@ -31,6 +37,8 @@ export function createApp(deps = {}) {
   const markets = deps.markets ?? createMarketRepo();
   const applications = deps.applications ?? createApplicationRepo();
   const connections = deps.connections ?? createConnectionRepo();
+  const profiles = deps.profiles ?? createProfileRepo();
+  const notifications = deps.notifications ?? createNotificationRepo();
 
   const squareClient = deps.squareClient ?? createSquareClient();
   const cloverClient = deps.cloverClient ?? createCloverClient();
@@ -42,7 +50,12 @@ export function createApp(deps = {}) {
   };
 
   const authService = createAuthService({ users });
-  const marketService = createMarketService({ markets, applications });
+  const profileService = createProfileService({ profiles });
+  const marketService = createMarketService({
+    markets,
+    applications,
+    notifications,
+  });
   const connectService = createConnectService({ connections, db, adapters });
   const analyticsService = createAnalyticsService({ db });
 
@@ -58,10 +71,13 @@ export function createApp(deps = {}) {
 
   app.use(express.json());
   app.use('/auth', createAuthRouter({ authService }));
+  app.use('/profile', createProfileRouter({ profileService }));
   app.use('/markets', createMarketRouter({ marketService }));
+  app.use('/host', createHostRouter({ marketService }));
   app.use('/connect', createConnectRouter({ connectService }));
   app.use('/feed', createFeedRouter({ db }));
   app.use('/analytics', createAnalyticsRouter({ analyticsService }));
+  app.use('/notifications', createNotificationRouter({ notifications }));
 
   app.use(errorHandler);
   return app;
