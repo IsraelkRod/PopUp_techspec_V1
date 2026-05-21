@@ -11,7 +11,15 @@ export function createInMemoryDb() {
       return salesByEventId.get(eventId) ?? null;
     },
 
-    async insertSale({ idempotencyKey, vendorId, currency, totalCents, items }) {
+    async insertSale({
+      idempotencyKey,
+      vendorId,
+      currency,
+      totalCents,
+      items = [],
+      occurredAt = null,
+      source = 'unknown',
+    }) {
       const sale = {
         id: crypto.randomUUID(),
         idempotencyKey,
@@ -19,10 +27,16 @@ export function createInMemoryDb() {
         currency,
         totalCents,
         lineItems: items.length,
+        occurredAt,
+        source,
         createdAt: new Date().toISOString(),
       };
       salesByEventId.set(idempotencyKey, sale);
       return sale;
+    },
+
+    async listSalesByVendor(vendorId) {
+      return [...salesByEventId.values()].filter((s) => s.vendorId === vendorId);
     },
   };
 }

@@ -7,6 +7,10 @@ export const config = {
   posWebhookSecret:
     process.env.POPUP_POS_WEBHOOK_SECRET ?? 'whsec_dev_secret_change_me',
 
+  // Used to encrypt POS access/refresh tokens at rest.
+  encryptionKey:
+    process.env.SECRET_ENCRYPTION_KEY ?? 'dev-insecure-encryption-key-change-me',
+
   square: {
     environment: process.env.SQUARE_ENVIRONMENT ?? 'sandbox',
     applicationId: process.env.SQUARE_APPLICATION_ID ?? '',

@@ -78,6 +78,49 @@ export function createMarketRepo() {
   };
 }
 
+// In-memory POS connection store (a vendor's link to Square/Clover/Stripe…).
+// Tokens are stored already-encrypted by the caller.
+export function createConnectionRepo() {
+  const byId = new Map();
+
+  const find = (vendorId, provider) =>
+    [...byId.values()].find(
+      (c) => c.vendorId === vendorId && c.provider === provider
+    ) ?? null;
+
+  return {
+    async upsert({ vendorId, provider, ...rest }) {
+      const existing = find(vendorId, provider);
+      if (existing) {
+        Object.assign(existing, rest, { updatedAt: new Date().toISOString() });
+        return existing;
+      }
+      const connection = {
+        id: crypto.randomUUID(),
+        vendorId,
+        provider,
+        ...rest,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      byId.set(connection.id, connection);
+      return connection;
+    },
+
+    async findById(id) {
+      return byId.get(id) ?? null;
+    },
+
+    async findByVendorAndProvider(vendorId, provider) {
+      return find(vendorId, provider);
+    },
+
+    async listByVendor(vendorId) {
+      return [...byId.values()].filter((c) => c.vendorId === vendorId);
+    },
+  };
+}
+
 // In-memory vendor application store (the host's vendor funnel).
 export function createApplicationRepo() {
   const byId = new Map();

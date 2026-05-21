@@ -5,8 +5,8 @@
   "type": "module",
   "description": "POP UP — modular vendor & host analytics platform (tech spec + reference code).",
   "scripts": {
-    "start": "node src/server.js",
-    "dev": "node --watch src/server.js",
+    "start": "node --env-file-if-exists=.env src/server.js",
+    "dev": "node --env-file-if-exists=.env --watch src/server.js",
     "test": "node --experimental-vm-modules node_modules/.bin/jest"
   },
   "dependencies": {
