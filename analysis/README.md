@@ -42,5 +42,16 @@ Modeled on the **NC SBTDC "North Carolina's SBIR/STTR Award Data Trends"** repor
 
 ## Status
 - [x] Program primer (`00`) — complete, no data required
-- [x] Ingest/clean skeleton (`01`) — ready to run once the award file is provided
-- [ ] Modules A–G — built as data lands, in the order above
+- [x] Ingest/clean (`01`) — **run on real data**: 9,734 TX awards → 3,394 in the 2016–2025 window,
+  878 unique firms, $1.81B. Clean dataframe cached to `data/tx_sbir_clean.parquet`.
+- [x] Module **A · Agency trends** — complete; 7 charts in `outputs/` (headline, awards+firms,
+  dollars/yr, agency lines, agency $ share, SBIR vs STTR, phase mix).
+- [ ] Module **B · Recipients** (next; award data only — no external source needed)
+- [ ] Modules **C, E, F, G** — award data (+ USAspending/SAM for E/F once approved)
+- [ ] Module **D · Geography** — gated on approval of the county-crosswalk source (S1)
+
+### Key findings so far (2016–2025, Texas)
+- **$1.81B** across **3,394 awards** to **878 firms**; annual dollars roughly **doubled** over the window.
+- **DoD ~56%** and **HHS ~25%** of dollars (**~81% combined**) — Texas mirrors the national mega-agency concentration.
+- **SBIR ~86% / STTR ~14%** of dollars; **Phase I = ~66% of awards but Phase II = ~78% of dollars**.
+- Heavy repeat-winner concentration (one TX firm holds **300+** awards) — quantified in Module B.
