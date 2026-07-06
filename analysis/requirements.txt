@@ -1,0 +1,9 @@
+# Texas SBIR/STTR Impact Analysis — Python dependencies
+# Works in Google Colab (most are preinstalled) and locally (Python >= 3.10)
+pandas>=2.0
+numpy>=1.24
+matplotlib>=3.7
+seaborn>=0.12
+plotly>=5.18
+requests>=2.31
+openpyxl>=3.1        # read .xlsx award exports

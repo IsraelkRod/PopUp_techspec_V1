@@ -1,0 +1,5 @@
+# Do not commit raw or derived data files — they can be large and/or re-derivable.
+# Keep the folder in git via this file; ignore everything else.
+*
+!.gitignore
+!README.md
