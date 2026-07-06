@@ -46,7 +46,8 @@ Modeled on the **NC SBTDC "North Carolina's SBIR/STTR Award Data Trends"** repor
   878 unique firms, $1.81B. Clean dataframe cached to `data/tx_sbir_clean.parquet`.
 - [x] Module **A · Agency trends** — complete; 7 charts in `outputs/` (headline, awards+firms,
   dollars/yr, agency lines, agency $ share, SBIR vs STTR, phase mix).
-- [ ] Module **B · Recipients** (next; award data only — no external source needed)
+- [x] Module **B · Recipients** — complete; 6 charts (top firms by count/$, awards-per-firm
+  distribution, new-vs-returning, Lorenz/Gini concentration, demographic ownership).
 - [ ] Modules **C, E, F, G** — award data (+ USAspending/SAM for E/F once approved)
 - [ ] Module **D · Geography** — gated on approval of the county-crosswalk source (S1)
 
@@ -54,4 +55,6 @@ Modeled on the **NC SBTDC "North Carolina's SBIR/STTR Award Data Trends"** repor
 - **$1.81B** across **3,394 awards** to **878 firms**; annual dollars roughly **doubled** over the window.
 - **DoD ~56%** and **HHS ~25%** of dollars (**~81% combined**) — Texas mirrors the national mega-agency concentration.
 - **SBIR ~86% / STTR ~14%** of dollars; **Phase I = ~66% of awards but Phase II = ~78% of dollars**.
-- Heavy repeat-winner concentration (one TX firm holds **300+** awards) — quantified in Module B.
+- **Concentrated recipients:** Lynntech alone holds **335 awards**; top 10 firms = **~25% of dollars**
+  (**Gini ≈ 0.71**). Median firm has 2 awards; **56 firms won 10+**.
+- **Ownership:** woman-owned ~8–9%, disadvantaged ~9%, HUBZone ~2–3% of awards.
